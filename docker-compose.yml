@@ -1,0 +1,10 @@
+services:
+  daarbast_api:
+    container_name: daarbast_api_container
+    build: .
+    ports:
+      - 8080 
+#   redis:
+#     image: 'redis:7'
+#     ports:
+#       - '6379'
