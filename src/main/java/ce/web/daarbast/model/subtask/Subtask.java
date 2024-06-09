@@ -1,42 +1,49 @@
-package ce.web.daarbast.model.user;
+package ce.web.daarbast.model.subtask;
 
 import java.util.Date;
 
+import ce.web.daarbast.model.task.Task;
+import ce.web.daarbast.model.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 @Data
 @Entity
-@Table(name = "users", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "username"),
-        @UniqueConstraint(columnNames = "email")
-})
+@Table(name = "subtasks")
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Subtask {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(unique = true)
-    private String userId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @NonNull
-    @Column(unique = true, nullable = false)
-    private String username;
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "task_id", nullable = false)
+    private Task task;
 
-    @NonNull
-    @Column(unique = true, nullable = false)
-    private String email;
+    @NotEmpty
+    @Column(nullable = false)
+    private String title;
+
+    private Boolean isCompleted;
+
+    @ManyToOne
+    @JoinColumn(name = "assignee_id")
+    private User assignee;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false, updatable = false)

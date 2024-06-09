@@ -1,4 +1,4 @@
-package ce.web.daarbast.model.user;
+package ce.web.daarbast.model.workspace;
 
 import java.util.Date;
 
@@ -10,33 +10,29 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 @Data
 @Entity
-@Table(name = "users", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "username"),
-        @UniqueConstraint(columnNames = "email")
-})
+@Table(name = "workspaces")
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Workspace {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(unique = true)
-    private String userId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @NonNull
-    @Column(unique = true, nullable = false)
-    private String username;
+    @NotEmpty
+    @Size(min = 1, max = 100)
+    @Column(nullable = false)
+    private String name;
 
-    @NonNull
-    @Column(unique = true, nullable = false)
-    private String email;
+    @Size(max = 255)
+    private String description;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false, updatable = false)
