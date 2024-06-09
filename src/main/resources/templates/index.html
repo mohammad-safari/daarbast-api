@@ -3,7 +3,29 @@
 <title th:text="#{daarbast.title}" />
 
 <body>
-    <h1 th:text="#{daarbast.greeting}"></h1>
+    <h1 th:text="#{daarbast.greeting}"/>
+    <h1 th:text="#{daarbast.notifications}"/>
+    <div id="notifications"/>
+
+    <script>
+        const userId = 1; // Change to the appropriate user ID
+
+        const eventSource = new EventSource(`/notifications/${userId}`);
+        eventSource.onmessage = function(event) {
+            const notificationsDiv = document.getElementById("notifications");
+            const newMessage = document.createElement("div");
+            newMessage.textContent = event.data;
+            notificationsDiv.appendChild(newMessage);
+        };
+        
+        eventSource.addEventListener("status", function(event) {
+            console.log("Status event: ", event.data);
+        });
+
+        eventSource.addEventListener("task", function(event) {
+            console.log("Task event: ", event.data);
+        });
+    </script>
 </body>
 
 </html>
