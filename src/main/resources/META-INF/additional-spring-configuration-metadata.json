@@ -14,6 +14,11 @@
             "name": "security.path.permitted",
             "type": "java.util.List<java.lang.String>",
             "description": "permitted paths"
+        },
+        {
+            "name": "embedded.redis.enabled",
+            "type": "java.lang.Boolean",
+            "description": "whether to enable embedded redis"
         }
     ]
 }
