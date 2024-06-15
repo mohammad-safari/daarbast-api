@@ -37,12 +37,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({ RsaKeyConfiguration.class, PathConfiguration.class })
 public class DaarbastSecurity {
-    private final RsaKeyConfiguration rsaKeyConfiguration;
-    private final PathConfiguration pathConfiguration;
-    private final DaarbastUserDetailsService userDetailsService;
-
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http, HandlerMappingIntrospector introspector,
+            DaarbastUserDetailsService userDetailsService, PathConfiguration pathConfiguration, JwtDecoder jwtDecoder)
+            throws Exception {
         return http
                 .csrf(it -> it.disable())
                 .cors(it -> it.disable())
@@ -52,7 +50,7 @@ public class DaarbastSecurity {
                     it.anyRequest().authenticated();
                 })
                 .sessionManagement(it -> it.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder())))
+                .oauth2ResourceServer((oauth2) -> oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder)))
                 .userDetailsService(userDetailsService)
                 .httpBasic(Customizer.withDefaults())
                 .build();
@@ -61,26 +59,25 @@ public class DaarbastSecurity {
     @Bean
     public BearerTokenResolver bearerTokenResolver() {
         return (HttpServletRequest request) -> {
-            var prefix = "Bearer-";
             var cookies = request.getCookies();
             return cookies == null ? null
                     : Arrays.stream(cookies)
-                            .filter(cookie -> cookie.getName().equals("Authorization"))
+                            .filter(cookie -> cookie.getName().equals(SecurityConstants.authorizationKey))
                             .map(Cookie::getValue)
-                            .filter(value->value.startsWith(prefix))
-                            .map(value -> value.substring(prefix.length()))
+                            .filter(value -> value.startsWith(SecurityConstants.tokenPrefix))
+                            .map(value -> value.substring(SecurityConstants.tokenPrefix.length()))
                             .findFirst()
                             .orElse(null);
         };
     }
 
     @Bean
-    public JwtDecoder jwtDecoder() {
+    public JwtDecoder jwtDecoder(RsaKeyConfiguration rsaKeyConfiguration) {
         return NimbusJwtDecoder.withPublicKey(rsaKeyConfiguration.publicKey()).build();
     }
 
     @Bean
-    JwtEncoder jwtEncoder() {
+    JwtEncoder jwtEncoder(RsaKeyConfiguration rsaKeyConfiguration) {
         var jwk = new RSAKey.Builder(rsaKeyConfiguration.publicKey())
                 .privateKey(rsaKeyConfiguration.privateKey()).build();
         var jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
