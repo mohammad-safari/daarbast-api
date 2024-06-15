@@ -1,12 +1,14 @@
 package ce.web.daarbast.security.userdetails;
 
+import java.util.Arrays;
 import java.util.Collection;
 
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import ce.web.daarbast.model.user.User;
-import io.micrometer.common.lang.NonNull;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
@@ -18,6 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Data
 @Entity
@@ -36,34 +39,36 @@ public class DaarbastUserDetails implements UserDetails {
     @JoinColumn(name = "username")
     private String username;
 
+    @Nullable
+    private String mfaToken;
+
+    private boolean mfaEnabled;
+
     @MapsId
     @JoinColumn(name = "user_id")
     @OneToOne(fetch = FetchType.LAZY)
     private User user;
 
+    // region unimplemented
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return Arrays.stream(autorityString.split(",")).map(DaarbastAuthority::new).toList();
 
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+    private String autorityString;
+    private boolean accountNonExpired;
+    private boolean accountNonLocked;
+    private boolean credentialsNonExpired;
+    private boolean enabled;
+    // endregion
+}
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+/**
+ * not an important class just as a utility for creating authentication object
+ */
+@Data
+@RequiredArgsConstructor
+class DaarbastAuthority implements GrantedAuthority {
+    private final String authority;
 }
