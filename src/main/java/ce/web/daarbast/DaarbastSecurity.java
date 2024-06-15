@@ -1,5 +1,7 @@
 package ce.web.daarbast;
 
+import java.util.Arrays;
+
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +16,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
@@ -24,6 +27,8 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import ce.web.daarbast.security.PathConfiguration;
 import ce.web.daarbast.security.RsaKeyConfiguration;
 import ce.web.daarbast.security.userdetails.DaarbastUserDetailsService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -32,7 +37,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({ RsaKeyConfiguration.class, PathConfiguration.class })
 public class DaarbastSecurity {
-
     private final RsaKeyConfiguration rsaKeyConfiguration;
     private final PathConfiguration pathConfiguration;
     private final DaarbastUserDetailsService userDetailsService;
@@ -52,6 +56,22 @@ public class DaarbastSecurity {
                 .userDetailsService(userDetailsService)
                 .httpBasic(Customizer.withDefaults())
                 .build();
+    }
+
+    @Bean
+    public BearerTokenResolver bearerTokenResolver() {
+        return (HttpServletRequest request) -> {
+            var prefix = "Bearer-";
+            var cookies = request.getCookies();
+            return cookies == null ? null
+                    : Arrays.stream(cookies)
+                            .filter(cookie -> cookie.getName().equals("Authorization"))
+                            .map(Cookie::getValue)
+                            .filter(value->value.startsWith(prefix))
+                            .map(value -> value.substring(prefix.length()))
+                            .findFirst()
+                            .orElse(null);
+        };
     }
 
     @Bean
