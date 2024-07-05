@@ -20,7 +20,7 @@ public class RegistrationController {
     private final UserRepository daarbastUserRepository;
 
     @PostMapping("register")
-    public void singup(@RequestBody SignupDto signupDto) {
+    public User singup(@RequestBody SignupDto signupDto) {
         var userModel = new User();
         userModel.setUsername(signupDto.username());
         userModel.setEmail(signupDto.email());
@@ -30,6 +30,7 @@ public class RegistrationController {
         partialUserDetails.setUsername(signupDto.username());
         partialUserDetails.setPassword(signupDto.password());
         daarbastUserDetailsService.registerUser(partialUserDetails);
+        return daarbastUserRepository.findByUsername(signupDto.username()).orElse(null);
     }
 
 }
