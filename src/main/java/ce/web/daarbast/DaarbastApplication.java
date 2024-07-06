@@ -29,5 +29,4 @@ public class DaarbastApplication {
 	public <K, V> Map<K, V> concurrentHashMap() {
 		return new ConcurrentHashMap<>();
 	}
-
 }
