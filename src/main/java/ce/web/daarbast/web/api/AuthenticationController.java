@@ -2,6 +2,7 @@ package ce.web.daarbast.web.api;
 
 import javax.security.auth.login.CredentialException;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +39,15 @@ public class AuthenticationController {
         cookie.setSecure(true);
         response.addCookie(cookie);
         return daarbastUserRepository.findByUsername(loginDto.username()).orElse(null);
+    }
+    
+    @DeleteMapping("logout")
+    public void login(HttpServletResponse response) {
+        var cookie = new Cookie(SecurityConstants.authorizationKey, "");
+        cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        response.addCookie(cookie);
     }
 
 }
